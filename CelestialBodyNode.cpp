@@ -29,6 +29,10 @@ void CelestialBodyNode::addChild(CelestialBodyNode *child) {
     }
 }
 
+QList<CelestialBodyNode*> CelestialBodyNode::getListChildren() const {
+    return m_children;
+}
+
 void CelestialBodyNode::setName(const QString &name) {
     m_name = name;
 }
@@ -69,4 +73,20 @@ CelestialBodyNode* CelestialBodyNode::getParent() {
 
 CelestialBodyNode* CelestialBodyNode::getChild(int row) {
     return m_children.at(row);
+}
+
+void CelestialBodyNode::setColor(const QColor &color) {
+    m_color = color;
+}
+
+QColor CelestialBodyNode::getColor() const {
+    return m_color;
+}
+
+void CelestialBodyNode::setRadius(const qreal &radius) {
+    m_radius = radius;
+}
+
+qreal CelestialBodyNode::getRadius() const {
+    return m_radius;
 }

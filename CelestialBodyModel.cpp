@@ -36,6 +36,12 @@ QVariant CelestialBodyModel::data(const QModelIndex &index, int role) const {
             else if (index.column() == 1) { // тип небесного тела
                 return node->getType();
             }
+            else if (index.column() == 2) { // цвет небесного тела
+                return node->getColor();
+            }
+            else if (index.column() == 3) { // радиус небесного тела
+                return node->getRadius();
+            }
             break;
         case Qt::EditRole: // Редактирование
             if (index.column() == 0) {
@@ -43,6 +49,12 @@ QVariant CelestialBodyModel::data(const QModelIndex &index, int role) const {
             }
             else if (index.column() == 1) {
                 return node->getType();
+            }
+            else if (index.column() == 2) { // цвет небесного тела
+                return node->getInfo();
+            }
+            else if (index.column() == 3) { // радиус небесного тела
+                return node->getRadius();
             }
             break;
         default:
@@ -135,7 +147,7 @@ QModelIndex CelestialBodyModel::index(int row, int column, const QModelIndex &pa
 
 int CelestialBodyModel::columnCount(const QModelIndex &parent) const {
     Q_UNUSED(parent); // Количество колонок одинаковое для всех узлов
-    return 2;
+    return 4;
 }
 
 
@@ -145,4 +157,21 @@ void CelestialBodyModel::setupTestModel() {
     CelestialBodyNode *planet2 = new CelestialBodyNode("Planet_2", "Планета", m_rootNode);
     CelestialBodyNode *sputnik1 = new CelestialBodyNode("Sputnik_1", "Спутник", planet1);
     CelestialBodyNode *sputnik2 = new CelestialBodyNode("Sputnik_1", "Спутник", planet2);
+    CelestialBodyNode *sputnik__ = new CelestialBodyNode("Sputnik__", "Спутние", planet1);
+
+    qreal r1 = 5, r2 = 3, r_m = 10;
+    planet1->setColor(QColor(Qt::blue));
+    planet1->setRadius(r1);
+    planet2->setColor(QColor(Qt::blue));
+    planet2->setRadius(r1);
+
+    sputnik1->setColor(QColor(Qt::gray));
+    sputnik1->setRadius(r2);
+    sputnik2->setColor(QColor(Qt::green));
+    sputnik2->setRadius(r2);
+    sputnik__->setColor(QColor(Qt::red));
+    sputnik__->setRadius(r2);
+
+    m_rootNode->setColor(QColor(Qt::yellow));
+    m_rootNode->setRadius(r_m);
 }
