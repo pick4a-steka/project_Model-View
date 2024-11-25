@@ -20,12 +20,13 @@ int main(int argc, char *argv[]) {
     view->setItemDelegate(delegate);
 
     view->setWindowTitle("Celestial Body System");
-    view->setMinimumSize(400, 300);
+    view->setMinimumSize(640, 480);
 
     view->header()->hide(); // скрываем заголовок-бар с номерами колонок
-    view->setRootIsDecorated(false); // для корня
+    // view->setRootIsDecorated(false); // для корня
     view->setExpandsOnDoubleClick(false); // отключаем стрелки для дочерних узлов
     view->setUniformRowHeights(true); // отключаем неравномерные высоты строк
+    view->setEditTriggers(QAbstractItemView::DoubleClicked); // включает редактирование при двойном клике
 
     // отключаем отображение стрелок для дочерних элементов
     view->setIndentation(0); // устанавливаем отступ в 0 для всех элементов

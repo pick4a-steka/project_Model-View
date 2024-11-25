@@ -77,6 +77,28 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
     void setupTestModel();
+
+    QModelIndex indexForNode(CelestialBodyNode *node) const;
+
+    void updateHierarchy(CelestialBodyNode *node, const QString &oldType, const QString &newType);
+    int findValidPlaceForNewPlanet(const QString &deleteName);
+    void changePlanetToSputnik(CelestialBodyNode *node);
+    CelestialBodyNode* findValidParentForSputnik(CelestialBodyNode *node) const;
+    void debugPrintTree(CelestialBodyNode *node, int depth = 0) const;
+    void printRows(const QModelIndex &parent = QModelIndex(), int level = 0) const;
+    void printTreeStructure(CelestialBodyNode *node, int level) const;
+
+
+    /*
+     * flags - чтобы модель поддерживала редактирование этот метод должен возвращать
+     * флаг Qt::ItemIsEditable для редактируемых ячеек
+    */
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+
+signals:
+    void structureChanged(); // сигнал об изменение иерархии
+
 private:
     CelestialBodyNode *m_rootNode;
+    CelestialBodyNode *m_fakeRoot;
 };

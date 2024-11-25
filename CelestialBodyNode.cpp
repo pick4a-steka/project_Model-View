@@ -29,6 +29,15 @@ void CelestialBodyNode::addChild(CelestialBodyNode *child) {
     }
 }
 
+void CelestialBodyNode::addChild(CelestialBodyNode *child, int index) {
+    if (child) {
+        child->m_parent = this;
+        if (index <= m_children.size() && index >= 0) {
+            m_children.insert(index, child);
+        }
+    }
+}
+
 QList<CelestialBodyNode*> CelestialBodyNode::getListChildren() const {
     return m_children;
 }
@@ -37,8 +46,30 @@ void CelestialBodyNode::setName(const QString &name) {
     m_name = name;
 }
 
-void CelestialBodyNode::setType(const QString &type) {
-    m_type = type;
+void CelestialBodyNode::setType(const QString &newType) {
+    if (m_type != newType) {
+        m_type = newType;
+    }
+}
+
+void CelestialBodyNode::clearChildren() {
+    for (int i = 0; i < m_children.size(); ++i) {
+        CelestialBodyNode *child = m_children[i];
+        child->setParent(nullptr);
+    }
+    m_children.clear();
+}
+
+int CelestialBodyNode::row() const {
+    if (m_parent && m_parent->getType() != "fake") { // Проверка, что это не фиктивный узел
+        return m_parent->getListChildren().indexOf(const_cast<CelestialBodyNode*>(this));
+    }
+    return -1;
+}
+
+
+void CelestialBodyNode::setParent(CelestialBodyNode *parent) {
+    m_parent = parent;
 }
 
 void CelestialBodyNode::setInfo(const QString &info) {
@@ -57,10 +88,9 @@ QString CelestialBodyNode::getInfo() const {
     return m_info;
 }
 
-void CelestialBodyNode::removeChild(int row) {
-    if (row >= 0 && row < m_children.size()) {
-        delete m_children.takeAt(row);
-    }
+void CelestialBodyNode::removeChild(CelestialBodyNode *child) {
+    m_children.removeOne(child);
+    child->setParent(nullptr);
 }
 
 int CelestialBodyNode::childCount() const {
@@ -68,6 +98,10 @@ int CelestialBodyNode::childCount() const {
 }
 
 CelestialBodyNode* CelestialBodyNode::getParent() {
+    // qDebug() << "Проверка" << m_parent->getName();
+    if (!m_parent) {
+        qDebug() << "пытаемся вернуть несуществующего родителя!";
+    }
     return m_parent;
 }
 

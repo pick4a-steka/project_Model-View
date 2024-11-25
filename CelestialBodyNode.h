@@ -3,6 +3,8 @@
 #include <QString>
 #include <QList>
 #include <QColor>
+#include <QDebug>
+#include <stack>
 
 // Класс, описывающий небесное тело
 class CelestialBodyNode {
@@ -13,10 +15,12 @@ public:
     virtual ~CelestialBodyNode();
 
     void addChild(CelestialBodyNode *child);
-    void removeChild(int row);
+    void addChild(CelestialBodyNode *child, int index);
+    void removeChild(CelestialBodyNode *child);
 
     CelestialBodyNode* getChild(int row);
     CelestialBodyNode* getParent();
+    void setParent(CelestialBodyNode *parent);
 
     int childCount() const;
 
@@ -36,6 +40,15 @@ public:
 
     void setRadius(const qreal &radius);
     qreal getRadius() const;
+
+    int row() const;
+
+    // void updateHierarchy(CelestialBodyNode *node, const QString &oldType, const QString &newType);
+
+    // int findValidPlaceForNewPlanet(const QString &deleteName);
+    // void changePlanetToSputnik(CelestialBodyNode *node);
+
+    void clearChildren();
 
 private:
     QString m_name; // Название для небесного тела
