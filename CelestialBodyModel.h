@@ -74,6 +74,30 @@ public:
     */
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
+    /*
+     * insertRow - метод для добавления новых объектов
+     * Параметры:
+     *  row - строка
+     *  column - колонка
+     *  parent - родительский узел
+     * Использование:
+     *  Метод используется для добавление в представление и структуру
+     *  новых небесных тел
+    */
+    bool insertRow_(int row, const QString type, const QModelIndex &parent = QModelIndex());
+
+    /*
+     * removeRow - метод для удаления объектов
+     * Параметры:
+     *  row - строка
+     *  column - колонка
+     *  parent - родительский узел
+     * Использование:
+     *  Метод используется для удаления из структуры
+     *  и представления небесных тел
+    */
+    bool removeRow_(int row, const QModelIndex &parent = QModelIndex());
+
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
     void setupTestModel();
@@ -82,11 +106,13 @@ public:
 
     void updateHierarchy(CelestialBodyNode *node, const QString &oldType, const QString &newType);
     int findValidPlaceForNewPlanet(const QString &deleteName);
-    void changePlanetToSputnik(CelestialBodyNode *node);
-    CelestialBodyNode* findValidParentForSputnik(CelestialBodyNode *node) const;
+    CelestialBodyNode* findValidParentForSputnik(CelestialBodyNode *node);
     void debugPrintTree(CelestialBodyNode *node, int depth = 0) const;
     void printRows(const QModelIndex &parent = QModelIndex(), int level = 0) const;
     void printTreeStructure(CelestialBodyNode *node, int level) const;
+    int searchPlanet(const QString &name, const QString &type) const;
+    QPair<int, int> searchSputnik(const QString &name, const QString &type) const;
+    CelestialBodyNode* getRoot() const;
 
 
     /*

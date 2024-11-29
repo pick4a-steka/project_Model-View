@@ -12,8 +12,10 @@
 #include <QDoubleSpinBox>
 #include <QColorDialog>
 #include <QComboBox>
+#include <QPair>
 
 #include "CelestialBodyNode.h"
+#include "CelestialBodyModel.h"
 
 class CelestialDelegate : public QStyledItemDelegate {
     Q_OBJECT
@@ -50,7 +52,7 @@ public:
     /*
      * sizeHint - настраивает размер ячеек
     */
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;    
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 private:
 
 };

@@ -83,6 +83,7 @@ bool CelestialBodyModel::setData(const QModelIndex &index, const QVariant &value
     switch (role) {
         case Qt::EditRole:
             if (index.column() == 0) {
+                qDebug() << "Имя изменяем на" << value.toString();
                 node->setName(value.toString());
             }
             else if (index.column() == 1) {
@@ -114,6 +115,26 @@ bool CelestialBodyModel::setData(const QModelIndex &index, const QVariant &value
                 }
             }
             break;
+        case Qt::UserRole:
+            if (index.column() == 0) {
+                node->setName(value.toString());
+            }
+            else if (index.column() == 1) {
+                node->setType(value.toString());
+            }
+            else if (index.column() == 2) {
+                node->setInfo(value.toString());
+            }
+            else if (index.column() == 3) {
+                node->setRadius(value.toDouble());
+            }
+            else if (index.column() == 4) {
+                QColor color = value.value<QColor>();
+                if (color.isValid()) {
+                    node->setColor(color);
+                }
+                printRows();
+            }
         default:
             return false;
     }
@@ -175,6 +196,52 @@ QModelIndex CelestialBodyModel::index(int row, int column, const QModelIndex &pa
     return createIndex(row, column, childNode);
 }
 
+bool CelestialBodyModel::insertRow_(int row, const QString type, const QModelIndex &parent) {
+    beginInsertRows(parent, row, row);
+
+    // Получаем родительский узел
+    CelestialBodyNode *parentNode = static_cast<CelestialBodyNode*>(parent.internalPointer());
+    if (!parentNode) {
+        return false;
+    }
+
+    // Создаем новый узел с базовыми параметрами
+    /// автоматическое добавление в список дочерних элементов в конструкторе
+    CelestialBodyNode *newNode = new CelestialBodyNode("Небесное тело", type, parentNode);
+    //newNode->set
+
+    qDebug() << "Вывод дерева из insertRow:";
+    printTreeStructure(m_fakeRoot, 0);
+    // printRows();
+
+    endInsertRows();
+    emit layoutChanged();
+    return true;
+}
+
+bool CelestialBodyModel::removeRow_(int row, const QModelIndex &parent) {
+    beginRemoveRows(parent, row, row);
+
+    // Получаем родительский узел
+    CelestialBodyNode *parentNode = static_cast<CelestialBodyNode*>(parent.internalPointer());
+    if (!parentNode) {
+        return false;
+    }
+
+    // Удаляем узел
+    CelestialBodyNode *removeNode = parentNode->getChild(row);
+
+    if (removeNode->getType() == "Планета") {
+        removeNode->clearChildren();
+    }
+
+    parentNode->removeChild(removeNode);
+    delete removeNode;
+
+    endRemoveRows();
+    return true;
+}
+
 int CelestialBodyModel::columnCount(const QModelIndex &parent) const {
     Q_UNUSED(parent); // Количество колонок одинаковое для всех узлов
     return 5;
@@ -198,6 +265,12 @@ void CelestialBodyModel::updateHierarchy(CelestialBodyNode *node, const QString 
     QModelIndex oldParentIndex = indexForNode(node->getParent());
     qDebug() << "Родитель у которого будем удалять узел:" << node->getParent()->getName();
     int oldRow = node->getParent()->getListChildren().indexOf(node);
+
+    if (newType != "Спутник" || m_rootNode->childCount() != 1) {
+        // Уведомляем представление об удалении узла
+        beginRemoveRows(oldParentIndex, oldRow, oldRow);
+    }
+
     qDebug() << "Row для удаления:" << oldRow;
     qDebug() << "Что удаляем:" << node->getParent()->getListChildren().at(oldRow)->getName();
 
@@ -212,12 +285,18 @@ void CelestialBodyModel::updateHierarchy(CelestialBodyNode *node, const QString 
     else if (newType == "Спутник") {
         newParent = findValidParentForSputnik(node);
         newRow = newParent ? newParent->getListChildren().size() : 0;
+
+        if (!newParent) {
+            qDebug() << "Невозможно удалить единственную планету";
+            node->setType("Планета");
+            printRows();
+            printTreeStructure(m_fakeRoot, 0);
+            return;
+        }
     }
 
     qDebug() << "row было было" << node->row();
 
-    // Уведомляем представление об удалении узла
-    beginRemoveRows(oldParentIndex, newRow, newRow);
     node->getParent()->removeChild(node);
     endRemoveRows();
 
@@ -254,12 +333,41 @@ void CelestialBodyModel::updateHierarchy(CelestialBodyNode *node, const QString 
 
 
         beginInsertRows(newIndex, newRow, newRow);
-        //
         endInsertRows();
         qDebug() << "row теперь" << node->row();
 
         printRows();
     }
+}
+
+int CelestialBodyModel::searchPlanet(const QString &name, const QString &type) const {
+    QList<CelestialBodyNode*> planets = m_rootNode->getListChildren();
+
+    for (int i = 0; i < m_rootNode->childCount(); ++i) {
+        if (m_rootNode->getChild(i)->getName() == name && m_rootNode->getChild(i)->getType() == type) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+QPair<int, int> CelestialBodyModel::searchSputnik(const QString &name, const QString &type) const {
+    QList<CelestialBodyNode*> planets = m_rootNode->getListChildren();
+
+    for (int i = 0; i < m_rootNode->childCount(); ++i) {
+        for (int j = 0; j < planets[i]->childCount(); ++j) {
+            if (planets[i]->getChild(j)->getName() == name && planets[i]->getChild(j)->getType() == type) {
+                return {i, j};
+            }
+        }
+    }
+
+    return {-1, -1};
+}
+
+CelestialBodyNode* CelestialBodyModel::getRoot() const {
+    return m_rootNode;
 }
 
 int CelestialBodyModel::findValidPlaceForNewPlanet(const QString &deleteName) {
@@ -275,46 +383,21 @@ int CelestialBodyModel::findValidPlaceForNewPlanet(const QString &deleteName) {
     return -1;
 }
 
-void CelestialBodyModel::changePlanetToSputnik(CelestialBodyNode *node) {
-    if (!node) {
-        return;
-    }
-
-    // ищем нового родителя для спутника
-    CelestialBodyNode *newParent = findValidParentForSputnik(node);
-
-    if (newParent) {
-        // перенос узла в нового родителя
-        // int newRow = newParent->getListChildren().size(); // добавляем в конец
-        // beginRemoveRows(indexForNode(node->getParent()), node->row(), node->row());
-        node->getParent()->removeChild(node);
-        // endRemoveRows();
-
-        // beginInsertRows(indexForNode(newParent), newRow, newRow);
-        newParent->addChild(node);
-        // endInsertRows();
-    }
-    else {
-        // Если нового родителя не найдено, оставляем узел как планету
-        node->setType("Планета");
-    }
-}
-
-CelestialBodyNode* CelestialBodyModel::findValidParentForSputnik(CelestialBodyNode *node) const {
+CelestialBodyNode* CelestialBodyModel::findValidParentForSputnik(CelestialBodyNode *node) {
     if (!node || !node->getParent()) {
         return nullptr;
     }
 
     CelestialBodyNode *parent = node->getParent();
     QList<CelestialBodyNode*> siblings = parent->getListChildren();
-
     int index = siblings.indexOf(node);
 
-    // Попробуем найти ближайших сосдей (слева или справа)
+    // Попробуем найти ближайших соседей (слева или справа)
     if (index > 0) {
         CelestialBodyNode *leftSibling = siblings.at(index - 1);
         if (leftSibling->getType() == "Планета") {
             qDebug() << "Новый родитель для бывшей планеты" << leftSibling->getName();
+            node->clearChildren();
             return leftSibling;
         }
     }
@@ -323,6 +406,7 @@ CelestialBodyNode* CelestialBodyModel::findValidParentForSputnik(CelestialBodyNo
         CelestialBodyNode *rightSibling = siblings.at(index + 1);
         qDebug() << "Новый родитель для бывшей планеты" << rightSibling->getName();
         if (rightSibling->getType() == "Планета") {
+            node->clearChildren();
             return rightSibling;
         }
     }
@@ -371,6 +455,7 @@ void CelestialBodyModel::printRows(const QModelIndex &parent, int level) const {
         if (node) {
             qDebug() << QString(level * 2, ' ') // Отступ для уровней
                      << "Row:" << row
+                     << ", Parent:" << node->getParent()->getName()
                      << ", Name:" << node->getName()
                      << ", Type:" << node->getType()
                      << ", Color:" << node->getColor()
