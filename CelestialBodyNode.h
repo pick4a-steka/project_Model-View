@@ -6,6 +6,10 @@
 #include <QDebug>
 #include <stack>
 
+#include "database.h"
+
+class DataBase;
+
 // Класс, описывающий небесное тело
 class CelestialBodyNode {
 public:
@@ -49,6 +53,7 @@ public:
     // void changePlanetToSputnik(CelestialBodyNode *node);
 
     void clearChildren();
+    CelestialBodyNode* createHeirarchyFromDataBase(DataBase &db);
 
 private:
     QString m_name; // Название для небесного тела

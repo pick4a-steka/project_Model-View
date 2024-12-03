@@ -13,7 +13,7 @@ void CelestialDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
         return;
     }
 
-    if (index.column() == 0) {
+    if (index.column() == 2) {
         painter->save();
 
         painter->setRenderHint(QPainter::Antialiasing);
@@ -249,28 +249,24 @@ void CelestialDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
 
         if (selectedValue != node->getType()) {
             model->setData(index.sibling(index.row(), 1), selectedValue, Qt::EditRole);
+            CelestialBodyNode *indexNode = static_cast<CelestialBodyNode*>(index.internalPointer());
+            //qDebug() << "index.internalPointer:" <<  indexNode->getName();
+            QModelIndex newIndex = celestial_model->indexForNode(indexNode->getParent());
 
-            int newRow = node->row();
-            qDebug() << "newRow в ДЕЛЕГАТЕ" << newRow;
+            int newRow = indexNode->row();
+            //qDebug() << "newRow в ДЕЛЕГАТЕ" << newRow;
 
             if (selectedValue == "Спутник" && node->getType() == "Планета") {
                 model->setData(index.sibling(index.row(), 1), node->getType(), Qt::EditRole);
             }
 
-            model->setData(index.sibling(newRow, 0), editName->text(), Qt::EditRole);
-            model->setData(index.sibling(newRow, 2), editInfo->text(), Qt::EditRole);
-            qDebug() << "Сейчас мы отправляем изменения объекта:" << index.sibling(index.row(), 0).data(Qt::DisplayRole).toString();
-            qDebug() << "index.row в делегате" << index.row();
-            qDebug() << "В модель отправляется радиус" << radiusSpinBox->value();
-            model->setData(index.sibling(newRow, 3), radiusSpinBox->value(), Qt::EditRole);
-
-            // Извлекаем цвет из QLabel и передаем его в модель
-            QVariant colorData = color_L->property("selectedColor");
-            if (colorData.isValid() && colorData.canConvert<QColor>()) {
-                QColor color = colorData.value<QColor>();
-                model->setData(index.sibling(newRow, 4), color, Qt::EditRole);
-                qDebug() << "В модель отправляется цвет" << color;
-            }
+            model->setData(model->index(newRow, 0, newIndex), _name_, Qt::EditRole);
+            model->setData(model->index(newRow, 2, newIndex), _info_, Qt::EditRole);
+            //qDebug() << "Сейчас мы отправляем изменения объекта:" << index.sibling(index.row(), 0).data(Qt::DisplayRole).toString();
+            //qDebug() << "index.row в делегате" << index.row();
+            //qDebug() << "В модель отправляется радиус" << radiusSpinBox->value();
+            model->setData(model->index(newRow, 3, newIndex), _radius_, Qt::EditRole);
+            model->setData(model->index(newRow, 4, newIndex), _color_, Qt::EditRole);
         }
         else {
             // Поиск индекса объекта для изменения
@@ -317,13 +313,13 @@ void CelestialDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
                     row = child->childCount();
                 }
 
-                qDebug() << "index.row():" << index.row();
+                //qDebug() << "index.row():" << index.row();
 
                 // Вставка нового объекта
                 celestial_model->insertRow_(row, type, newIndex);
                 CelestialBodyNode *node = celestial->getChild(row);
 
-                qDebug() << "node-row():" << node->row();
+                //qDebug() << "node-row():" << node->row();
 
                 // Установка дефолтного цвета для небесного тела
                 QColor color = Qt::gray;
@@ -341,12 +337,12 @@ void CelestialDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
                     editType_addOrdel->currentIndex() >= 0) {
                 if (type == "Планета") {
                     int row = celestial_model->searchPlanet(name, type);
-                    qDebug() << "Удаление элемента row" << row;
+                    //qDebug() << "Удаление элемента row" << row;
                     celestial_model->removeRow_(row, index);
                 }
                 else {
                     QPair<int, int> rows = celestial_model->searchSputnik(name, type);
-                    qDebug() << "row Планеты" << rows.first << "row Спутника" << rows.second;
+                    //qDebug() << "row Планеты" << rows.first << "row Спутника" << rows.second;
 
                     // Находим индекс планеты родителя для спутника, который собираемся удалить
                     QModelIndex newIndex = celestial_model->indexForNode(celestial_model->getRoot()->getChild(rows.first));

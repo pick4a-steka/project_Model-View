@@ -2,6 +2,7 @@
 
 #include <QAbstractItemModel>
 #include "CelestialBodyNode.h"
+#include "database.h"
 
 /*
  * Настраивается структура данных: Светило -> планета -> спутник
@@ -109,11 +110,10 @@ public:
     CelestialBodyNode* findValidParentForSputnik(CelestialBodyNode *node);
     void debugPrintTree(CelestialBodyNode *node, int depth = 0) const;
     void printRows(const QModelIndex &parent = QModelIndex(), int level = 0) const;
-    void printTreeStructure(CelestialBodyNode *node, int level) const;
+    void structurePrepare(CelestialBodyNode *node, int level, QList<CelestialBodyNode*> &celestialBodies) const;
     int searchPlanet(const QString &name, const QString &type) const;
     QPair<int, int> searchSputnik(const QString &name, const QString &type) const;
     CelestialBodyNode* getRoot() const;
-
 
     /*
      * flags - чтобы модель поддерживала редактирование этот метод должен возвращать
@@ -127,4 +127,7 @@ signals:
 private:
     CelestialBodyNode *m_rootNode;
     CelestialBodyNode *m_fakeRoot;
+
+    DataBase db;
+    QList<CelestialBodyNode*> celestialBodies;
 };

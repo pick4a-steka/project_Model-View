@@ -5,22 +5,26 @@
 #include <QTreeView>
 #include <QHeaderView>
 #include <QListView>
+#include <modeltest.h>
 
 #include "CelestialBodyModel.h"
 #include "CelestialDelegate.h"
+#include "myTreeView.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    QTreeView *view = new QTreeView;
+    //QTreeView *view = new QTreeView;
+    MyTreeView *view = new MyTreeView;
     CelestialBodyModel *model = new CelestialBodyModel();
     CelestialDelegate *delegate = new CelestialDelegate();
+    // ModelTest tester(model); // подключение ModelTest к модели
 
     view->setModel(model);
     view->setItemDelegate(delegate);
 
     view->setWindowTitle("Celestial Body System");
-    view->setMinimumSize(640, 480);
+    view->setMinimumSize(480, 640);
 
     view->header()->hide(); // скрываем заголовок-бар с номерами колонок
     // view->setRootIsDecorated(false); // для корня

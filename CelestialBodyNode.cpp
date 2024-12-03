@@ -22,6 +22,43 @@ CelestialBodyNode::~CelestialBodyNode() {
 
 }
 
+CelestialBodyNode* CelestialBodyNode::createHeirarchyFromDataBase(DataBase &__db__) {
+    QList<QVariantMap> celestialBodies = __db__.fetchAll();
+
+    // Карта для хранения узлов по имени
+    QMap<QString, CelestialBodyNode*> nodeMap;
+    CelestialBodyNode *root = new CelestialBodyNode("KMA-2005", "Светило");
+    root->setColor(Qt::yellow);
+    root->setRadius(28.0);
+
+    for (const auto &row : celestialBodies) {
+        // создаем узел
+        CelestialBodyNode *node = new CelestialBodyNode(
+            row["name"].toString(),
+            row["type"].toString()
+        );
+
+        node->setInfo(row["info"].toString());
+        node->setColor(QColor(row["hex_color"].toString()));
+        node->setRadius(row["radius"].toDouble());
+
+        // Добавляем узел в карту
+        QString name = row["name"].toString();
+        nodeMap[name] = node;
+
+        // Привязываем к родителю, если указан parent
+        QString parentName = row["parent"].toString();
+        if (parentName == "KMA-2005") {
+            root->addChild(node); // Добавляем планету к светилу
+        }
+        else {
+            nodeMap[parentName]->addChild(node);
+        }
+    }
+
+    return root;
+}
+
 void CelestialBodyNode::addChild(CelestialBodyNode *child) {
     if (child) {
         child->m_parent = this;
@@ -61,12 +98,15 @@ void CelestialBodyNode::clearChildren() {
 }
 
 int CelestialBodyNode::row() const {
-    if (m_parent && m_parent->getType() != "fake") { // Проверка, что это не фиктивный узел
-        return m_parent->getListChildren().indexOf(const_cast<CelestialBodyNode*>(this));
+    if (m_parent && m_parent->getType() != "fake") {
+        int rowIndex = m_parent->getListChildren().indexOf(const_cast<CelestialBodyNode*>(this));
+        if (rowIndex == -1) {
+            qWarning() << "Ошибка: Узел не найден в родительском списке! Узел:" << m_name;
+        }
+        return rowIndex;
     }
-    return -1;
+    return 0;
 }
-
 
 void CelestialBodyNode::setParent(CelestialBodyNode *parent) {
     m_parent = parent;

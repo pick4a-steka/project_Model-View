@@ -1,4 +1,5 @@
 QT       += core gui
+QT  += sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -12,14 +13,21 @@ SOURCES += \
     CelestialBodyModel.cpp \
     CelestialBodyNode.cpp \
     CelestialDelegate.cpp \
+    database.cpp \
+    info_widget.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    modeltest.cpp
 
 HEADERS += \
     CelestialBodyModel.h \
     CelestialBodyNode.h \
     CelestialDelegate.h \
-    mainwindow.h
+    database.h \
+    info_widget.h \
+    mainwindow.h \
+    modeltest.h \
+    myTreeView.h
 
 FORMS += \
     mainwindow.ui
