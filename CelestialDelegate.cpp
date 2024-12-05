@@ -303,7 +303,9 @@ void CelestialDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
             if (editName_addOrdel && !editName_addOrdel->text().isEmpty() && \
                     editType_addOrdel->currentIndex() >= 0) {
                 int row = celestial->childCount();
-                QModelIndex newIndex = index;
+                // QModelIndex newIndex = index;
+                qDebug() << "Name of celestials" << celestial->getName();
+                QModelIndex newIndex = celestial_model->indexForNode(celestial);
                 if (type == "Спутник") {
                     CelestialBodyNode *child = celestial->getChild(row - 1);
 

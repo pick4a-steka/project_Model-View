@@ -8,6 +8,8 @@
 
 #include "CelestialBodyModel.h"
 
+class CelestialBodyModel;
+
 class MyTreeView : public QTreeView {
     Q_OBJECT
 
@@ -16,7 +18,7 @@ public:
 
     void setModel(CelestialBodyModel *m) {
         model = m;
-        QTreeView::setModel(m);
+        QTreeView::setModel(reinterpret_cast<QAbstractItemModel*>(m));
     }
 
 protected:

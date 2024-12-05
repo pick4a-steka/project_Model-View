@@ -20,6 +20,7 @@ SOURCES += \
     modeltest.cpp
 
 HEADERS += \
+    BindWidget.h \
     CelestialBodyModel.h \
     CelestialBodyNode.h \
     CelestialDelegate.h \

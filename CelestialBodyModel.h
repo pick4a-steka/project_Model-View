@@ -1,8 +1,13 @@
 #pragma once
 
 #include <QAbstractItemModel>
+#include <QObject>
+#include <QHBoxLayout>
+
 #include "CelestialBodyNode.h"
 #include "database.h"
+#include "myTreeView.h"
+#include "info_widget.h"
 
 /*
  * Настраивается структура данных: Светило -> планета -> спутник
@@ -10,10 +15,12 @@
  * Добавляется логика для добавления, редактирования и удаления элементов
 */
 
+class MyTreeView;
+
 class CelestialBodyModel : public QAbstractItemModel {
     Q_OBJECT
 public:
-    explicit CelestialBodyModel(QObject *parent = nullptr);
+    explicit CelestialBodyModel(MyTreeView *view, InfoWidget *iw, QWidget *bindWidget, QObject *parent = nullptr);
     virtual ~CelestialBodyModel() override;
 
     /*
@@ -121,12 +128,17 @@ public:
     */
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
+private slots:
+    void newInfoWidget(const QModelIndex &index);
+
 signals:
     void structureChanged(); // сигнал об изменение иерархии
 
 private:
     CelestialBodyNode *m_rootNode;
     CelestialBodyNode *m_fakeRoot;
+    InfoWidget *iw;
+    QWidget *bW;
 
     DataBase db;
     QList<CelestialBodyNode*> celestialBodies;

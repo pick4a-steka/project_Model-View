@@ -1,4 +1,5 @@
 #include "CelestialBodyModel.h"
+#include "myTreeView.h"
 
 /*
  * 1. В методах модели (data, rowCount, parent, index)
@@ -7,15 +8,39 @@
  * 2. Подключить модель к QTreeView для отображения
 */
 
-CelestialBodyModel::CelestialBodyModel(QObject *parent) : QAbstractItemModel(parent) {
+CelestialBodyModel::CelestialBodyModel(MyTreeView *view, InfoWidget *iw, QWidget *bindWidget, QObject *parent) : QAbstractItemModel(parent), \
+    iw(iw), bW(bindWidget) {
     db = DataBase(QString("celestial"));
     setupTestModel();
+
+    connect(view, &QAbstractItemView::clicked, this, &CelestialBodyModel::newInfoWidget);
 }
 
 CelestialBodyModel::~CelestialBodyModel() {
     structurePrepare(m_rootNode, 0, celestialBodies);
     db.saveInDataBase(celestialBodies);
     delete m_fakeRoot;
+}
+
+void CelestialBodyModel::newInfoWidget(const QModelIndex &index) {
+    if (!index.isValid()) {
+        return;
+    }
+
+    // Получаем данные о небесном теле из модели
+    auto celestialBodyNode = static_cast<CelestialBodyNode*>(index.internalPointer());
+    if (!celestialBodyNode) {
+        return;
+    }
+
+    QString name = celestialBodyNode->getName();
+    QString type = celestialBodyNode->getType();
+    QColor color = celestialBodyNode->getColor();
+    QString info = celestialBodyNode->getInfo();
+
+    iw->setDataOfCelestial(color, name, type, info);
+    //QPaintEvent *plug = nullptr;
+    //iw->paintEvent(plug);
 }
 
 QVariant CelestialBodyModel::data(const QModelIndex &index, int role) const {
@@ -130,6 +155,7 @@ bool CelestialBodyModel::setData(const QModelIndex &index, const QVariant &value
                 node->setInfo(value.toString());
             }
             else if (index.column() == 3) {
+                qDebug() << "Устанавливаемый радиус" << value.toDouble();
                 node->setRadius(value.toDouble());
             }
             else if (index.column() == 4) {
@@ -213,7 +239,7 @@ bool CelestialBodyModel::insertRow_(int row, const QString type, const QModelInd
     //newNode->set
 
     qDebug() << "Вывод дерева из insertRow:";    
-    // printRows();
+    debugPrintTree(m_fakeRoot, 0);
 
     endInsertRows();
     emit layoutChanged();
@@ -482,6 +508,19 @@ void CelestialBodyModel::structurePrepare(CelestialBodyNode *node, int level, QL
 
     for (CelestialBodyNode *child : node->getListChildren()) {
         structurePrepare(child, level + 1, celestialBodies);
+    }
+}
+
+void CelestialBodyModel::debugPrintTree(CelestialBodyNode *node, int level) const {
+    if (!node) return;  // Если узел пустой, выходим
+
+        // Выводим имя текущего узла с отступами
+        QString indent(level * 2, ' ');  // Создаем отступы в зависимости от уровня дерева
+        qDebug() << indent << node->getName();
+
+        // Рекурсивно выводим всех детей текущего узла
+        for (CelestialBodyNode* child : node->getListChildren()) {
+            debugPrintTree(child, level + 1);  // Увеличиваем уровень отступа для дочерних элементов
     }
 }
 
