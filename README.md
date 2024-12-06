@@ -87,7 +87,7 @@
   
 6. Также для работы проекта необходима СУБД PostgreSQL, для её установки необходимо выполнить:
 ```
-sudo apt install postgresql postgresql-contrib -y
+apt-get install postgresql postgresql-contrib -y
 ```
 
 7. Для того, чтобы начать работать с базой данный из под СУБД PostgreSQL, требуется прописать в терминале:
